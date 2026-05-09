@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "age": 30,
+    "active": true,
+    "address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "zip": "10001",
+      "country": "USA"
+    },
+    "tags": ["engineer", "python"]
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob@example.com",
+    "age": 25,
+    "active": false,
+    "address": {
+      "street": "456 Oak Ave",
+      "city": "San Francisco",
+      "zip": "94102",
+      "country": "USA"
+    },
+    "tags": ["designer", "figma"]
+  },
+  {
+    "id": 3,
+    "name": "Charlie Brown",
+    "email": "charlie@example.com",
+    "age": 35,
+    "active": true,
+    "address": {
+      "street": "789 Pine Rd",
+      "city": "Chicago",
+      "zip": "60601",
+      "country": "USA"
+    },
+    "tags": ["manager", "agile"]
+  },
+  {
+    "id": 4,
+    "name": "Diana Prince",
+    "email": null,
+    "age": 28,
+    "active": true,
+    "address": {
+      "street": "321 Elm St",
+      "city": "Boston",
+      "zip": "02101",
+      "country": "USA"
+    },
+    "tags": ["researcher", "ai", "ml"]
+  },
+  {
+    "id": 5,
+    "name": "Eve, Davis",
+    "email": "eve@example.com",
+    "age": 22,
+    "active": false,
+    "address": null,
+    "tags": []
+  }
+]

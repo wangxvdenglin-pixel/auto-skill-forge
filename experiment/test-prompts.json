@@ -1,0 +1,180 @@
+[
+  {
+    "id": 1,
+    "function": "json_to_csv",
+    "description": "Convert flat JSON array of users to CSV with all fields",
+    "prompt": "Convert experiment/test-data/users.json to CSV format. Include all fields from the JSON. Save the output to experiment/test-data/output/users.csv",
+    "pass_criteria": [
+      "Output file exists at experiment/test-data/output/users.csv",
+      "CSV has a header row with column names matching JSON keys",
+      "CSV has exactly 5 data rows (matching JSON array length)",
+      "Fields with null values (email for Diana) are preserved as empty strings",
+      "Fields with commas in value (Eve, Davis) are properly quoted"
+    ]
+  },
+  {
+    "id": 2,
+    "function": "json_to_csv",
+    "description": "Convert JSON to CSV with specific field selection",
+    "prompt": "From experiment/test-data/users.json, extract only the 'id', 'name', and 'email' fields and convert to CSV. Save to experiment/test-data/output/users_select.csv",
+    "pass_criteria": [
+      "Output file has exactly 3 columns: id, name, email",
+      "Has exactly 5 data rows",
+      "Diana's email is empty (null in source)"
+    ]
+  },
+  {
+    "id": 3,
+    "function": "csv_to_json",
+    "description": "Convert CSV products list to JSON array",
+    "prompt": "Convert experiment/test-data/products.csv to a JSON array. Save to experiment/test-data/output/products.json",
+    "pass_criteria": [
+      "Output is valid JSON array",
+      "Has exactly 7 items (matching CSV data rows)",
+      "Each item has all 5 fields: name, category, price, stock, rating",
+      "Numeric fields (price, stock, rating) are numbers not strings",
+      "Product names with special chars ('Notebook, A5', 'Monitor 27\"') are correct"
+    ]
+  },
+  {
+    "id": 4,
+    "function": "csv_to_json",
+    "description": "Convert CSV to JSON with type hints",
+    "prompt": "Convert experiment/test-data/products.csv to JSON. Make sure price and stock are numbers, rating is a float. Save to experiment/test-data/output/products_typed.json",
+    "pass_criteria": [
+      "price values are numbers (e.g., 29.99 not '29.99')",
+      "stock values are integers (e.g., 150 not '150')",
+      "rating values are floats (e.g., 4.5 not '4.5')",
+      "Array has exactly 7 items"
+    ]
+  },
+  {
+    "id": 5,
+    "function": "filter_and_extract_json",
+    "description": "Filter active users and extract specific fields",
+    "prompt": "From experiment/test-data/users.json, filter users where active=true, and extract only name, email, and city (from address.city). Save to experiment/test-data/output/active_users.json",
+    "pass_criteria": [
+      "Output contains exactly 3 users (Alice, Charlie, Diana)",
+      "Each user has name, email, city fields",
+      "city is correctly extracted from nested address.city",
+      "Bob and Eve (active=false) are not included"
+    ]
+  },
+  {
+    "id": 6,
+    "function": "filter_and_extract_json",
+    "description": "Filter users by age range with multiple conditions",
+    "prompt": "From experiment/test-data/users.json, filter users where age >= 25 AND age <= 30. Extract id, name, age. Save to experiment/test-data/output/users_age_range.json",
+    "pass_criteria": [
+      "Output contains exactly 3 users (Alice 30, Bob 25, Diana 28)",
+      "Each has exactly id, name, age fields",
+      "Charlie (35) and Eve (22) are excluded"
+    ]
+  },
+  {
+    "id": 7,
+    "function": "flatten_nested_json",
+    "description": "Flatten nested user addresses to flat structure",
+    "prompt": "Flatten experiment/test-data/users.json so that nested address fields become dot-notation keys (e.g., address.city). Handle null addresses properly. Save to experiment/test-data/output/users_flat.json",
+    "pass_criteria": [
+      "Each user has dot-notation keys like 'address.street', 'address.city'",
+      "Users with address get proper flattened fields",
+      "Eve (address: null) does not crash, null address handled gracefully",
+      "tags arrays are stringified or preserved"
+    ]
+  },
+  {
+    "id": 8,
+    "function": "flatten_nested_json",
+    "description": "Deeply nested config flattening",
+    "prompt": "Flatten experiment/test-data/nested-config.json completely using dot-notation. Save to experiment/test-data/output/config_flat.json",
+    "pass_criteria": [
+      "Nested keys like 'app.settings.logging.level' appear at top level",
+      "All leaf values are correct (e.g., 'app.settings.database.port' = 5432)",
+      "Arrays like 'app.endpoints' are handled (stringified or preserved)",
+      "Deeply nested values like 'app.settings.database.pool.max' are present"
+    ]
+  },
+  {
+    "id": 9,
+    "function": "transform_csv_data",
+    "description": "Filter, select columns, and sort CSV data",
+    "prompt": "From experiment/test-data/products.csv, select only Electronics category items, keep only name and price columns, sort by price descending. Save to experiment/test-data/output/electronics_sorted.csv",
+    "pass_criteria": [
+      "Output has only 2 columns: name, price",
+      "Contains exactly 3 rows (Wireless Mouse, USB-C Cable, Monitor 27\")",
+      "Rows sorted by price descending (Monitor 349.99 first, USB-C 12.50 last)",
+      "Furniture and Stationery items excluded"
+    ]
+  },
+  {
+    "id": 10,
+    "function": "transform_csv_data",
+    "description": "Filter CSV by numeric condition on rating",
+    "prompt": "From experiment/test-data/products.csv, filter rows where rating >= 4.5, select all columns, sort by rating descending. Save to experiment/test-data/output/top_rated.csv",
+    "pass_criteria": [
+      "Contains exactly 3 rows (Wireless Mouse 4.5, Notebook A5 4.7, Ergonomic Chair 4.9, Monitor 27\" 4.6)",
+      "Sorted by rating descending: Chair 4.9, Notebook 4.7, Monitor 4.6, Mouse 4.5",
+      "Products with rating < 4.5 excluded"
+    ]
+  },
+  {
+    "id": 11,
+    "function": "aggregate_and_group_json",
+    "description": "Group sales by region with count, sum, average",
+    "prompt": "From experiment/test-data/sales.json, group by region. For each region compute: count of transactions, total_amount (sum of amount), avg_amount, total_qty. Save to experiment/test-data/output/sales_by_region.json",
+    "pass_criteria": [
+      "Has exactly 3 groups: East, West, North",
+      "East: count=3, total_amount=450, total_qty=23",
+      "West: count=3, total_amount=450, total_qty=22",
+      "North: count=2, total_amount=390, total_qty=20",
+      "avg_amount is correct for each group"
+    ]
+  },
+  {
+    "id": 12,
+    "function": "aggregate_and_group_json",
+    "description": "Group by product across all regions",
+    "prompt": "From experiment/test-data/sales.json, group by product. For each product compute: count, total_amount, avg_amount. Save to experiment/test-data/output/sales_by_product.json",
+    "pass_criteria": [
+      "Has exactly 3 groups: A, B, C",
+      "Product A: count=3, total_amount=370",
+      "Product B: count=3, total_amount=750",
+      "Product C: count=2, total_amount=170"
+    ]
+  },
+  {
+    "id": 13,
+    "function": "edge_case",
+    "description": "Handle empty input gracefully",
+    "prompt": "Convert this empty JSON array to CSV: []. Save to experiment/test-data/output/empty.csv",
+    "pass_criteria": [
+      "Does not crash or produce error that breaks flow",
+      "Output is either empty file OR a file with just headers OR an appropriate message",
+      "No malformed CSV produced"
+    ]
+  },
+  {
+    "id": 14,
+    "function": "edge_case",
+    "description": "Handle CSV with special characters",
+    "prompt": "Convert experiment/test-data/products.csv to JSON, ensuring that product names with commas, quotes, and special characters are preserved correctly. Save to experiment/test-data/output/products_special.json",
+    "pass_criteria": [
+      "'Notebook, A5' is preserved with comma intact (not split into two fields)",
+      "'Monitor 27\"' has the double quote preserved correctly",
+      "JSON output is valid (parseable)"
+    ]
+  },
+  {
+    "id": 15,
+    "function": "edge_case",
+    "description": "Handle missing/null fields during conversion",
+    "prompt": "Convert experiment/test-data/users.json to CSV. User Diana has null email, User Eve has null address. Save to experiment/test-data/output/users_null.csv",
+    "pass_criteria": [
+      "Diana's email column is empty (not 'null' string)",
+      "Eve's row does not crash despite null address",
+      "All 5 rows present in output",
+      "CSV is valid and parseable"
+    ]
+  }
+]

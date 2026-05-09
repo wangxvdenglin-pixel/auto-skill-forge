@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(git clone *)",
+      "Bash(npx skills *)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(mkdir -p \"D:/pycharm/Agent/skill_optimizer/experiment/test-data/output\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+[
+  { "region": "East", "product": "A", "amount": 100, "qty": 5 },
+  { "region": "East", "product": "B", "amount": 200, "qty": 10 },
+  { "region": "East", "product": "A", "amount": 150, "qty": 8 },
+  { "region": "West", "product": "A", "amount": 120, "qty": 6 },
+  { "region": "West", "product": "B", "amount": 250, "qty": 12 },
+  { "region": "West", "product": "C", "amount": 80, "qty": 4 },
+  { "region": "North", "product": "B", "amount": 300, "qty": 15 },
+  { "region": "North", "product": "C", "amount": 90, "qty": 5 }
+]
