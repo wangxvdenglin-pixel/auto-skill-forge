@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "function": "standard_meeting",
+    "description": "Clean meeting notes → structured summary",
+    "prompt": "Organize these meeting notes into a structured summary with action items and decisions:\n\nProduct sync 5/8 - attendees: Alice, Bob, Charlie, Diana\n- Reviewed Q2 roadmap progress. Alice said backend API is 80% done, on track for May 20.\n- Bob flagged that mobile app is blocked on the API changes, needs at least the /users endpoint by May 15.\n- Decided to prioritize /users endpoint for May 13 delivery.\n- Charlie proposed new onboarding flow, team agreed it's a good idea but not urgent.\n- Diana will prepare onboarding mockups by next week.\n- Budget review: we're under budget by 12%, can potentially hire one more contractor.",
+    "expected": "structured meeting notes with title, date, attendees, decisions (prioritize /users endpoint), action items (Alice: continue API, Bob: wait for /users, Diana: mockups), and section for budget discussion"
+  },
+  {
+    "id": 2,
+    "function": "messy_notes",
+    "description": "Messy, unstructured notes → clean summary",
+    "prompt": "Clean up these messy meeting notes into proper format:\n\ntalked about stuff\n- jake thinks the design is broken maybe\n- we should fix it before launch??\n- launch is june 1 btw\n- someone needs to update the docs for the new api\n- megan said she'd do it but didn't commit\n- should we postpone launch? idk\n- oh and kyle mentioned the server costs are up 30% this month\n- we agreed to look into it",
+    "expected": "structured output that identifies: (1) design issue needs resolution, (2) launch June 1 at risk, (3) docs need updating - assignable, (4) server costs +30% needs investigation. Clean formatting despite messy input."
+  },
+  {
+    "id": 3,
+    "function": "action_items_only",
+    "description": "Extract only action items from meeting transcript",
+    "prompt": "Extract only the action items from this meeting transcript:\n\nMorning everyone. Let's go through our sprint review. First, the login page redesign - looks great, shipping on Friday. Tom, you said you'd finish the accessibility audit? Right, by Wednesday. Great. Secondly, the checkout flow - we've got some performance issues, page load is like 4 seconds. Priya is going to profile it and report back next sprint planning. Third thing - customer support is getting lots of questions about the refund policy, so we need to add a FAQ section. I think Sarah volunteered for that? Yes, Sarah will draft it by Friday. OK so about the database migration, that's been on our backlog for 3 sprints. Let's actually schedule it - Alex, can you own that? Start planning next week. That's it for today.",
+    "expected": "action items table with: (1) Tom - accessibility audit - Wed, (2) Priya - profile checkout performance - next sprint, (3) Sarah - FAQ draft - Fri, (4) Alex - plan DB migration - next week. No other content."
+  },
+  {
+    "id": 4,
+    "function": "decision_tracking",
+    "description": "Track decisions with rationale",
+    "prompt": "Create formal meeting minutes focused on decisions made. Here's the discussion:\n\nWe spent about 40 minutes debating whether to use PostgreSQL or MongoDB for the new analytics service. Elena argued for Postgres because we already have expertise and it handles complex queries well. Raj pushed for Mongo because the data is semi-structured and schema changes frequently. After looking at the pros and cons, we voted. Postgres won 3-1. We also discussed hosting - AWS RDS vs self-hosted. Decided to go with RDS for now, managed service saves ops time, we can revisit if costs become an issue. Last item was timeline. Q3 or Q4? Elena wants Q3, Raj says Q4 is more realistic given current commitments. Compromise: start in Q3 with minimal scope, expand in Q4.",
+    "expected": "decisions with rationale: (1) PostgreSQL chosen over MongoDB (3-1 vote, expertise + complex queries), (2) AWS RDS over self-hosted (ops savings, revisit if costly), (3) Q3 start minimal scope, Q4 expand (compromise). Clear decision/alternatives/rationale structure."
+  },
+  {
+    "id": 5,
+    "function": "client_meeting",
+    "description": "Client meeting → client-facing minutes",
+    "prompt": "Turn this client call into professional meeting minutes suitable for sharing with the client:\n\nhad a call with acme corp - our contact is mike the CTO, we had john (PM) and lisa (eng lead) from our side\nmain topic was the integration delays - they're not happy obviously\nmike said their engineering team is struggling with our API docs, they said examples are unclear and missing error codes\nthey also want a dedicated support channel instead of email, maybe slack connect\nwe committed to improving the docs within 2 weeks and setting up slack connect by next week\nlisa demoed the new dashboard feature, mike liked it but wants custom branding\nwe said custom branding is on the Q4 roadmap, maybe we can fast-track for acme since they're a big account\nthey asked about pricing for the enterprise tier, john said he'll send a proposal by friday\nnext check-in scheduled for 2 weeks from now",
+    "expected": "professional client-ready minutes: meeting objective, client concerns (API docs, support channel), our commitments (docs 2 weeks, slack connect 1 week, pricing proposal Fri), client feedback (dashboard positive, wants branding), next steps. Not internal-notes tone."
+  },
+  {
+    "id": 6,
+    "function": "executive_summary",
+    "description": "Long meeting → 3-sentence executive summary",
+    "prompt": "Give me a 2-3 sentence executive summary of this 1-hour project review:\n\nWe went through all 5 workstreams. Workstream 1 (User Research) - completed 12 interviews, synthesized findings, 3 major pain points identified. On track. Workstream 2 (Visual Design) - high-fidelity mockups done for desktop, tablet version started, slightly behind (1 week). Workstream 3 (Frontend) - component library 60% built, waiting on design signoff for 3 components. Workstream 4 (Backend) - all APIs done except payment integration which is blocked on legal review. Workstream 5 (QA) - test plan written, automated testing framework set up, ready to start when frontend delivers. Overall assessment: green on 3 streams, yellow on 2 (Design and Backend/payments). Budget at 85% consumed, timeline at 70%, we're trending slightly over budget but within acceptable range. Key risk is the legal review for payments - could take 2-8 weeks, unknown. Team morale is good, no burnout flags. Next review in 2 weeks.",
+    "expected": "2-3 sentence executive summary capturing: project overall on track (3 green 2 yellow), main risk is payment integration blocked on legal review, budget at 85% trending slightly over. Concise, no details."
+  },
+  {
+    "id": 7,
+    "function": "brainstorm_session",
+    "description": "Brainstorm session → organized themes",
+    "prompt": "Structure this brainstorm into organized themes with next steps:\n\nOK team let's brainstorm how to improve user retention. Going around the room:\n- Push notifications for inactive users\n- Better onboarding tutorial\n- Gamification - badges, streaks, points\n- Email digest with personalized recommendations\n- Social features - share achievements with friends\n- AI-powered content recommendations\n- Simplify the signup flow, it's like 5 screens right now\n- Add a dark mode, people keep asking\n- Referral program - give existing users credits for inviting\n- Better search with filters\n- In-app guided tours for new features\n- Community forum or Discord\n- Weekly challenges or competitions\n- Progress tracking dashboard\n- Integration with calendar apps for reminders\n\nEveryone voted on top 3 ideas. Results: (1) Better onboarding - 8 votes, (2) Push notifications - 7 votes, (3) Referral program - 6 votes.",
+    "expected": "themes: engagement features (notifications, gamification, email digest, challenges), UX improvements (onboarding, signup flow, dark mode, guided tours), social/community (share, forum, referral), discovery (AI recommendations, search). Top 3 by votes highlighted. Next steps implied."
+  },
+  {
+    "id": 8,
+    "function": "edge_case",
+    "description": "Very short meeting with minimal info",
+    "prompt": "Summarize this:\n\nquick sync - everyone agreed the deploy should happen tomorrow at 10am. jenna will coordinate.",
+    "expected": "professional handling of minimal input: brief summary with date/time, decision (deploy tomorrow 10am), single action item (Jenna coordinates). Does not fabricate details."
+  }
+]
