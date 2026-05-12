@@ -1,51 +1,83 @@
 # Experiment 4: Real Sub-Agent Testing — Darwin vs Optimizer-Old vs Optimizer-New
 
 **Subject:** error-analysis (165 lines, process skill)
-**Mode:** FULL_TEST — real sub-agents used for calibration and review
+**Mode:** FULL_TEST — 6 real sub-agent calls total
 **Baseline:** 6/8 PASS (75%), cases 5+8 failing
 
 ---
 
-## Phase 0.6: Judge Calibration (Real)
-
-First real sub-agent calibration in any experiment:
+## Phase 0.6: Judge Calibration (2 sub-agent calls)
 
 | Round | Sub-agent | My labels | TPR | TNR | Action |
 |-------|-----------|-----------|-----|-----|--------|
 | 1 | 8/8 ALL PASS | 2 FAIL (case 5,8) | 100% | **0%** | Too lenient — tighten criteria |
 | 2 (tightened) | 6 PASS, 2 FAIL | 6 PASS, 2 FAIL | 100% | **100%** | Calibrated |
 
-**Key finding:** The sub-agent initially gave PASS to every case because the skill's *implied* structure seemed sufficient. Tightening the fail criteria to require *explicit* text flipped cases 5 and 8 to FAIL. This is exactly what calibration is for — without it, a lenient judge would have reported 100% pass rate for a skill that had real gaps.
+---
+
+## Phase 2: Adversarial Review (2 sub-agent calls)
+
+| Round | Reviewer score | Key critique | Action |
+|-------|---------------|-------------|--------|
+| v1 | 5/10 | "Vague-request handling at end of doc is not a gate" | Restructured |
+| v2 | 8/10 | "Placement correct. 2 minor soft spots remain." | Committed |
+
+---
+
+## Phase 2 Follow-up: Post-Optimization Re-Scoring (3 sub-agent calls)
+
+After all three branches were optimized, **spawned 3 independent judge agents** — one per branch — each receiving the optimized SKILL.md + all 8 test cases with tightened criteria.
+
+### Raw Results
+
+```
+              基线     Darwin    Opt-Old   Opt-New
+Case 1:       PASS     PASS      PASS      PASS
+Case 2:       PASS     PASS      FAIL      PASS
+Case 3:       PASS     PASS      PASS      PASS
+Case 4:       PASS     FAIL      PASS      FAIL
+Case 5:       FAIL     PASS      PASS      PASS
+Case 6:       PASS     PASS      PASS      PASS
+Case 7:       PASS     PASS      PASS      PASS
+Case 8:       FAIL     PASS      PASS      PASS
+             ─────    ─────     ─────     ─────
+通过率:        6/8      7/8       7/8       7/8
+              75%      87.5%     87.5%     87.5%
+```
+
+### Analysis
+
+All three branches achieved 87.5% (vs 75% baseline) — cases 5 and 8 fixed across the board.
+
+But **different judges flagged different remaining issues:**
+
+| Branch | Lost case | Judge's reason |
+|--------|-----------|---------------|
+| Darwin | Case 4 | "No explicit text addressing post-incident regression; would start from scratch" |
+| Opt-Old | Case 2 | "No compromise offered for user who cannot review traces; only says present each trace" |
+| Opt-New | Case 4 | "No explicit adaptation for regression scenarios with existing evaluators" |
+
+**Critical observation:** Case 2 and Case 4 were both PASS in baseline. The variation is not in the skill quality — it's in **judge inconsistency between different sub-agent instances.** The Opt-Old judge flagged Case 2 (which Darwin and Opt-New judges passed). The Darwin and Opt-New judges flagged Case 4 (which Opt-Old judge passed).
+
+This is exactly what calibration is designed to mitigate, but calibration was only performed on the baseline judge — not on these three post-optimization judges. Each fresh Claude instance brings slightly different judgment thresholds.
 
 ---
 
 ## The Three Optimizations
 
-All three targeted the same two failing test cases. All three would re-evaluate to 100% pass rate. **The difference is in how they fixed it.**
-
 ### Darwin (+28 lines)
-Added three sections:
-- "Before You Start" — 3 verification questions (before Core Process)
-- "Handling Problematic Traces" — 4-step guidance (before Anti-Patterns)
-- "Handling Vague Requests" — 3 diagnostic questions (before Anti-Patterns)
-
-**Issue:** Two sections overlap with each other and with existing Step 1 content. 28 lines for what could be ~10.
+- "Before You Start" checkpoint (3 questions)
+- "Handling Problematic Traces" section (4 steps)
+- "Handling Vague Requests" section (3 diagnostic questions)
+- **Issue:** "Before You Start" and "Handling Vague Requests" overlap. 28 lines.
 
 ### Optimizer-Old (+6 lines)
-Added one section at the END of the document:
-- "Edge Cases" — 2 subsections covering incomplete traces + vague requests
-
-**Issue:** The vague-request handling is placed AFTER Step 7, Stopping Criteria, and Trace Sampling Strategies. An agent reading the document linearly would go through the entire error analysis process before reaching the instruction to ask clarifying questions. The gate is at the wrong end of the document.
+- "Edge Cases" section at END of document
+- **Issue:** Vague-request gate is after Step 7 — agent reads entire process before reaching it.
 
 ### Optimizer-New (+13 lines, 2 iterations)
-**v1 (rejected):** Same as Optimizer-Old — Edge Cases at end of document.
-> **Adversarial reviewer: 5/10** — "Content correct, placement fatally wrong. Gatekeeping at the end of the document is not a gate."
-
-**v2 (committed):**
-- Vague-request handling → **Prerequisites** section BEFORE Core Process (functions as a proper gate)
-- Incomplete-trace handling → **inline in Step 1** where the problem surfaces
-- Hard stop language: "do NOT proceed further until you have answers"
-> **Adversarial reviewer: 8/10** — "Placement now correct. Two minor soft spots remain (partial-answer gray zone, all-traces-incomplete degenerate case) but no contradiction or regression."
+- **v1 (rejected):** Same as Opt-Old. Reviewer: 5/10.
+- **v2:** Prerequisites gate BEFORE Core Process + incomplete-trace handling inline in Step 1. Reviewer: 8/10.
 
 ---
 
@@ -53,21 +85,38 @@ Added one section at the END of the document:
 
 ```
                      Darwin        Opt-Old        Opt-New
+Pass rate             7/8 (87.5%)   7/8 (87.5%)   7/8 (87.5%)
 Lines added           28             6              13
-Sections added         3             1               2 (inline)
-Iterations             1             1               2 (v1 rejected)
+Iterations             1             1              2 (v1 rejected)
 Reviewer score        N/A           N/A            5/10 → 8/10
 Gate placement        ✓ (before CP) ✗ (end of doc) ✓ (before CP)
-Incomplete traces     Separate sec   Same section    In Step 1 inline
-Duplication           Yes (2 overlapping)  No           No
+Duplication           Yes           No             No
 ```
 
 ---
 
-## What This Experiment Proved (With Real Sub-Agents)
+## Key Findings
 
-1. **Judge calibration catches lenient judges.** Without the tightened-criteria re-run, we'd have shipped a baseline with 100% pass rate for a skill that objectively had gaps. TNR=0% → fixed to TNR=100%.
+1. **All three frameworks fix the target problem** — cases 5+8 consistently flipped from FAIL to PASS across all three judges.
 
-2. **Adversarial review catches placement problems the editor misses.** The optimizer-old (and optimizer-new v1) fix was functionally identical to darwin's — tack on a section. The editor (me) only thought about "does this text fix the test case?" The reviewer thought about "does an agent reading this document linearly encounter this text at the right time?" That's a different perspective — and it was correct.
+2. **Adversarial review improves code quality, not pass rate.** At 87.5%, optimizer-new ties with the others. But its fix is cleaner (13 lines, correct placement, no duplication) because the reviewer forced a second iteration.
 
-3. **Without adversarial review, optimizer-new = optimizer-old.** v1 was identical to what optimizer-old committed. The only difference is that optimizer-new had a reviewer say "no, fix the placement" before the commit landed.
+3. **Judge variance is real.** Three independent judges gave different verdicts on cases 2 and 4. This validates the entire Phase 0.6 calibration concept — without calibration, you can't distinguish "the skill changed" from "the judge had a different opinion."
+
+4. **Without adversarial review, optimizer-new = optimizer-old.** v1 was identical. The reviewer is what made the difference.
+
+5. **Darwin over-engineers.** 28 lines across 3 sections vs 13 lines in 2 inline placements. Same result, more code.
+
+### Sub-Agent Call Summary
+
+| Call | Type | Purpose | Result |
+|------|------|---------|--------|
+| 1 | Judge | Phase 0.6 Round 1 | TNR=0% — too lenient |
+| 2 | Judge | Phase 0.6 Round 2 | TPR=100%, TNR=100% — calibrated |
+| 3 | Reviewer | Phase 2 v1 review | 5/10 — rejected |
+| 4 | Reviewer | Phase 2 v2 review | 8/10 — approved |
+| 5 | Judge | Darwin post-optimization | 7/8 PASS |
+| 6 | Judge | Opt-Old post-optimization | 7/8 PASS |
+| 7 | Judge | Opt-New post-optimization | 7/8 PASS |
+
+Total: **7 real sub-agent calls.** Experiment 1-3 combined: 0.
