@@ -8,7 +8,13 @@
       "Bash(git config *)",
       "Bash(mkdir -p \"D:/pycharm/Agent/skill_optimizer/experiment/test-data/output\")",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(mkdir -p \"D:/pycharm/Agent/skill_optimizer/experiment4/darwin-results\" \"D:/pycharm/Agent/skill_optimizer/experiment4/optimizer-old-results\" \"D:/pycharm/Agent/skill_optimizer/experiment4/optimizer-new-results\")",
+      "Bash(cp \"D:/pycharm/Agent/skill_optimizer/.claude/skills/error-analysis/SKILL.md\" \"D:/pycharm/Agent/skill_optimizer/experiment4/subject/\")",
+      "Bash(mkdir -p \"D:/pycharm/Agent/skill_optimizer/experiment4/subject\")",
+      "Bash(git show *)"
     ]
   }
 }
