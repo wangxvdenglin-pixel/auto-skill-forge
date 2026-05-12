@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "function": "standard",
+    "prompt": "Design a binary judge to evaluate whether customer support replies use the right tone for VIP customers. We have 30 labeled examples (15 pass, 15 fail). Error analysis showed that agents sometimes use casual language with VIPs.",
+    "pass": ["Output has all 4 components: task/criterion, pass/fail definitions, few-shot examples, structured output format", "Pass/fail definitions are specific to VIP tone (not generic 'be good')", "At least 2 examples are included", "Output format is JSON with critique + result fields"],
+    "fail": ["Uses Likert scale (1-5) instead of binary Pass/Fail", "Missing few-shot examples", "Evaluates multiple failure modes in one judge", "Uses dev/test examples as few-shot without warning"]
+  },
+  {
+    "id": 2,
+    "function": "edge_vague",
+    "prompt": "I need a judge to check if my chatbot's answers are 'helpful'. Can you make one?",
+    "pass": ["Pushes back on vague criterion — asks user to narrow down to one specific failure mode", "Explains that 'helpful' is too broad — suggests decomposing into specific checks", "Offers to help after user clarifies what 'unhelpful' looks like concretely"],
+    "fail": ["Accepts 'helpful' as-is and writes a vague judge prompt", "Creates a holistic judge covering multiple dimensions", "Doesn't mention the need for error analysis or labeled examples"]
+  },
+  {
+    "id": 3,
+    "function": "edge_no_labels",
+    "prompt": "Our RAG system sometimes returns answers that contradict the source documents. We've identified this in error analysis but don't have labeled data yet. Can you build a judge for faithfulness?",
+    "pass": ["Warns that judge needs labeled examples for few-shot and validation", "Suggests labeling at least 20 pass + 20 fail examples first", "May draft judge structure but explicitly notes it can't be validated without labels", "References validate-evaluator as next step after labeling"],
+    "fail": ["Builds a judge without mentioning the need for labeled data", "Doesn't reference the prerequisites (20 pass + 20 fail)", "Skips mentioning that unvalidated judges are unreliable"]
+  },
+  {
+    "id": 4,
+    "function": "edge_code_checkable",
+    "prompt": "My AI interviewer sometimes asks 'general' questions instead of behavioral ones (e.g., 'how do you usually handle conflict' instead of 'tell me about a specific time you handled conflict'). Build a judge to catch this.",
+    "pass": ["Checks if this failure mode can be handled with code first — points out that keywords like 'usually', 'typically', 'normally' are regex-detectable", "Recommends trying a code-based check before an LLM judge", "If user insists, builds the judge but notes it's overkill"],
+    "fail": ["Builds an LLM judge without checking if regex/code can handle it", "Doesn't mention the anti-pattern about specification failures vs judge failures"]
+  },
+  {
+    "id": 5,
+    "function": "standard_complex",
+    "prompt": "Build a judge to evaluate whether a legal document summary is faithful to the original contract. We have 50 labeled examples. Key issues: hallucinated clauses, omitted key terms, misrepresented obligations.",
+    "pass": ["Pass/fail definitions cover the 3 specific issues: hallucination, omission, misrepresentation", "Few-shot examples span all 3 failure types", "Includes at least one borderline example", "Output format has critique before verdict"],
+    "fail": ["Definitions are generic ('summary should be accurate')", "All examples are clear-cut — no borderline cases", "Judge mixes multiple failure modes without clear separation per mode"]
+  },
+  {
+    "id": 6,
+    "function": "edge_likert",
+    "prompt": "Create a judge that rates the quality of generated marketing copy on a scale of 1-5.",
+    "pass": ["Explains why Likert scales are problematic (annotator disagreement, unactionable results)", "Suggests decomposing into binary judges: 'factually accurate?', 'matches brand voice?', 'includes CTA?'", "Offers to build multiple binary judges instead"],
+    "fail": ["Accepts 1-5 scale without pushback", "Doesn't mention the anti-pattern about Likert scales in the skill"]
+  },
+  {
+    "id": 7,
+    "function": "edge_data_leakage",
+    "prompt": "I have 100 labeled examples. Build me a judge for detecting hallucinations. Use some of my best examples as few-shot.",
+    "pass": ["Warns about data leakage — examples used in the prompt must be from a training split, not dev/test", "Explains the split: 10-20% for training (few-shot), rest for dev/test", "Asks user to confirm which examples are from the training split before proceeding"],
+    "fail": ["Uses user's examples directly without warning about data leakage", "Doesn't mention the need for a separate training split for few-shot examples"]
+  },
+  {
+    "id": 8,
+    "function": "edge_minimal",
+    "prompt": "make me a judge for my chatbot thx",
+    "pass": ["Asks clarifying questions: what specific failure mode? Do you have labeled data? Has error analysis been done?", "Does not fabricate a judge without understanding the failure mode", "Points user to prerequisites (error analysis first)"],
+    "fail": ["Produces a generic judge without asking any questions", "Fabricates a failure mode or labeled examples", "Doesn't push back on the vague request"]
+  }
+]
