@@ -1,6 +1,6 @@
 ---
 name: paper-weekly
-description: "Organize scattered paper reading notes and PDF summaries into a unified Markdown table. Use when users paste multiple summaries, mention \"整理论文\", \"论文周报\", \"paper weekly\", \"这周看的论文\", or want to create a structured reading digest with columns for title, method, results, and personal insights."
+description: "Organize scattered paper reading notes and PDF summaries into a unified Markdown table with columns for title, method, results, and personal insights. Use when users mention \"整理论文\", \"论文周报\", \"文献整理\", \"文献周报\", \"整理笔记\", \"paper weekly\", \"literature review\", \"reading notes\", \"paper organizer\", \"这周看的论文\", \"帮我汇总\", or paste multiple paper summaries for structured weekly digest creation."
 ---
 
 # Paper Weekly
