@@ -48,7 +48,8 @@ Format as a Markdown table. Use this exact structure:
 - **Missing information**: If a dimension has no data for a paper, fill with "—" (em dash). Do not invent content.
 - **Special characters in content**: Escape pipe characters `|` within cells by replacing them with `、` or `/`.
 - **Very long content**: Truncate to 120 characters per cell. Append "…" to indicate truncation.
-- **Duplicate titles**: Merge entries with the same title, combining non-redundant information.
+- **Duplicate titles**: Merge entries with the same title, combining non-redundant information. If merged entries contain contradictory claims, mark the conflicting cell with `⚠ 冲突：` prefix followed by both versions.
+- **URL or DOI only**: If the input contains only a URL/DOI with no paper metadata, fill the table row with the URL as title and "—" for remaining columns, then note: "仅提供了链接，建议补充论文摘要以完善周报。" Do not attempt to fetch the URL.
 
 ### Step 5: Confirm with User
 
