@@ -52,11 +52,13 @@ Format as a Markdown table. Use this exact structure:
 
 ### Step 5: Confirm with User
 
-Show the draft table to the user before finalizing:
+Show the draft table to the user before finalizing. Match the confirmation message language to the user's conversation language. Default in Chinese:
 
 > "以上是根据你的笔记整理的论文周报草稿，需要修改或补充吗？"
 
-If user requests changes, apply them and re-show. Otherwise proceed.
+- If user requests factual corrections (wrong title, misattributed results, missing dimension) → apply and re-show.
+- If user requests content fabrication → reject and explain why.
+- If user does not respond → proceed to Step 6 after a reasonable pause.
 
 ### Step 6: Present Output
 
