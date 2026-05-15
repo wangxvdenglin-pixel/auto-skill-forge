@@ -1,239 +1,54 @@
-# Skill Optimizer
+# Auto-Skill-Forge
 
-自主的 Agent Skill 优化器。基于 darwin-skill（受 Karpathy autoresearch 启发）升级，引入对抗审稿、二进制判卷、Dimension×Tuple 测试设计、以及同一杆秤前后对比机制。评估 SKILL.md 的质量，诊断弱点，改进，只保留有进步的改动。
+**Create and optimize Agent Skills the way you train models.**
 
----
+Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch). Autonomous experiment loops, applied to the full skill lifecycle. Create → Evaluate → Improve → Judge → Keep only what works. A ratchet that only turns forward.
 
-## 1. 评估体系（100 分）
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Compatible-blueviolet)](https://skills.sh)
+[![Skills](https://img.shields.io/badge/skills.sh-Compatible-green)](https://skills.sh)
 
-### Component A：结构分析（75 分）— 静态打分
+## Quick Start
 
-主 agent 直接阅读 SKILL.md 打分，不需要运行测试。
-
-| # | 维度 | 权重 | 检查什么 |
-|---|------|------|---------|
-| 1 | Frontmatter 质量 | 8 | `name` 小写+连字符。`description` 含做什么+何时用+触发关键词。≤1024 字符。 |
-| 2 | 工作流清晰度 | 15 | 步骤编号可执行。每步有明确输入和输出。 |
-| 3 | 边界条件覆盖 | 10 | 覆盖失败场景。有 fallback 路径。有错误恢复。 |
-| 4 | 检查点设计 | 7 | 关键决策前有用户确认，防止自主失控。 |
-| 5 | 指令具体性 | 15 | 无模糊指令。有具体参数、格式、示例。能直接执行。 |
-| 6 | 资源完整性 | 5 | 引用的脚本、资源、文件路径真实可达。 |
-| 7 | 整体架构 | 15 | 结构层次清晰，无冗余，无遗漏。 |
-
-**计分：** 每维度 1-10 分 × 权重，求和除以 10。最高 75 分。
-
-### Component B：效果评估（25 分）— 二进制判卷
-
-不再是主观打 1-10 分。设计 8-15 道考题，每道有机械可判定的 PASS/FAIL 标准。独立子 agent（判卷 agent）逐题判。
-
-**效果分 = 通过率 × 25。** 最高 25 分。
-
-### 棘轮规则
-
-```
-总分 = 结构分 + 效果分（最高 100 分）
-新分 > 旧分（严格大于）→ 保留
-新分 ≤ 旧分 → git revert 回滚
-分数只升不降。
+```bash
+npx skills add <your-username>/auto-skill-forge
 ```
 
----
+Then just tell Claude Code what you want:
 
-## 2. 测试设计：Dimension × Tuple
+- **Create a new skill:** "Create a skill that organizes my weekly paper reading notes"
+- **Optimize an existing skill:** "Optimize the paper-weekly skill"
 
-不是拍脑袋想几个 prompt。用维度交叉生成系统化的测试覆盖。
+## How It Works
 
-### Step 1：定义 3 个维度
-
-针对 skill 最可能失败的方向，每个维度 2-4 个值：
-
-```
-维度：输入质量 — 用户给了多少信息
-  值：[极简, 详细, 模糊]
-
-维度：用户需求 — 用户想要什么
-  值：[完整输出, 仅摘要, 仅行动项]
-
-维度：边界条件 — 什么可能出错
-  值：[正常, 数据缺失, 需求冲突]
-```
-
-### Step 2：生成约 12 个元组
-
-从笛卡尔积中采样，覆盖多样性和边界组合。用户确认（删不合理的、补遗漏的）。
-
-### Step 3：展开为测试用例
-
-每个元组写一道题，含明确的 PASS/FAIL 标准：
-
-```json
-{
-  "id": 1,
-  "dimensions": {"输入质量": "极简", "用户需求": "仅摘要", "边界条件": "正常"},
-  "prompt": "用户自然语言",
-  "pass": ["机械可查的条件 1", "机械可查的条件 2"],
-  "fail": ["失败模式 1", "失败模式 2"]
-}
-```
-
-**关键规则：** 每条标准必须机械可查——不能有"感觉不错"这种主观判断。Skill 声称能处理的能力，至少一道题验证。
-
----
-
-## 3. 对抗审稿 + 同一杆秤（核心创新）
-
-### 问题一：自己改自己评
-
-原始版 Phase 2 中同一个 agent 既编辑 skill 又重评分——"自己改自己评"。
-
-**解决：** 引入独立审稿 agent。受 ARIS 项目（Auto-Research-In-Sleep）的 2-Agent 对抗模式启发——关键洞察是**一个模型无法可靠地批判自己的产出**。用全新、独立的子 agent 会话 + 对抗性 prompt（默认假设改动有 bug）+ 上下文隔离（看不到编辑者的推理）实现等效的盲点探测。
-
-### 问题二：不同判卷 agent 标准不一致
-
-每次 spawn 子 agent 都是全新实例——不同实例对同一 skill 可能给出不同分数。你分不清"skill 变好了"还是"换了个更宽松的老师"。
-
-**解决：同一杆秤量前后。** 审判 agent 在同一个上下文中同时判基线版和优化版：
+Auto-Skill-Forge runs a 6-phase autonomous pipeline:
 
 ```
-审判 agent 同时收到：
-  - 基线版 SKILL.md + 全部考题
-  - 优化版 SKILL.md + 同样考题
-
-返回：
-  基线 6/8 → 优化 8/8
-  Delta: +2  ← 同一杆秤，差值可信
+Phase 0  Intent      → Determine mode (create/optimize), interview, draft
+Phase 1  Design      → Extract claims → propose checklist → user approves
+Phase 2  Calibration → Verify checklist mechanical clarity (TPR/TNR >= 80%)
+Phase 3  Baseline    → Initial assessment (create mode: dual anchor vs bare Claude)
+Phase 4  Optimize    → Autonomous hill-climb: Diagnose→Edit→Review+Re-score→Keep/Revert
+Phase 5  Rewrite     → Exploratory rewrite when stuck (user consent required)
+Phase 6  Report      → Summary + package .skill
 ```
 
-**原理：** 同一个 agent 实例的标准是一致的。偏严对两边都偏严，偏松对两边都偏松——Delta 抵消了系统性偏差。
+## Evaluation (100 points)
 
-### 问题三：考题标准模糊
+- **Structural (75 pts):** 7 dimensions — Frontmatter, Workflow clarity, Edge cases, Checkpoints, Specificity, Resource integrity, Architecture
+- **Effectiveness (25 pts):** 3-6 yes/no checklist questions x 8-12 test inputs, scored by independent sub-agent
 
-Phase 0.6 校准时，子 agent 全判 PASS 但用户认为应该 FAIL（TNR=0%）。根因不是 agent 能力差，是考题标准本身不够机械。
+## Six Core Principles
 
-**解决：重新定位 Phase 0.6。** 从"校准判卷老师"改为**"校准考题标准的机械程度"**。只抽 5 题（不是旧版的 15-20 题），用户标注后子 agent 也判，对比 TPR/TNR。低分说明标准写得太模糊，改标准不换判卷人。
+| # | Principle |
+|:---|:---|
+| 01 | **Single editable asset** — One SKILL.md per experiment |
+| 02 | **Dual evaluation** — Structure scoring + checklist testing |
+| 03 | **Ratchet mechanism** — Score can only go up |
+| 04 | **Independent scoring** — Editor never scores |
+| 05 | **Human in the loop** — Phases 0-2 user-defined, 3-6 autonomous |
+| 06 | **Creation is optimization** — Creating = hill-climbing from scratch |
 
----
+## License
 
-## 4. 优化循环全流程
-
-```
-Phase 0:   初始化（确定范围，建分支）
-Phase 0.5: 设计考题（Dimension × Tuple，约12道，用户确认）
-Phase 0.6: 校准考题标准（抽5题，校准的是标准不是判卷人）
-    ↓
-Phase 1:   摸底考试（子 agent 判全部考题，出评分卡，直接进 Phase 2）
-    ↓
-Phase 2:   自主优化（每轮 4 步，无人干预，最多 3 轮）
-    Step 1: 诊断 — 找最弱的一个点（结构维度 ≤5 或 多个 FAIL 的共用能力）
-    Step 2: 编辑 — 改 SKILL.md，git commit
-    Step 3: 审稿+判卷 — 同一个独立子 agent：
-             批评者：改动对吗？引入新问题吗？打几分？
-             判卷者：同时判基线版和优化版 → 返回 Delta
-             打分 < 6 → 打回 Step 1；6-7 → 按反馈改后重审；≥ 8 → 通过
-    Step 4: 决定 — 涨分保留，不涨 git revert
-    ↓
-Phase 3:   出报告 + 生成成果卡片
-```
-
-**人在哪：** Phase 0.5（确认考题）和 Phase 0.6（标注 5 题）。Phase 1-3 全自主运行——符合 auto-research 的"定义目标后 agent 自己跑"哲学。
-
----
-
-## 5. 三个 Agent 的分工
-
-| Agent | 角色 | 关键约束 |
-|-------|------|---------|
-| 主 agent | 组织者+编辑者 | 能看到 SKILL.md 全文+诊断推理。**不能给自己改的代码打分。** |
-| 判卷 agent | 中立判卷（Phase 0.6+1） | 看不到用户的校准标签。考题标准机械到不同人判一致。 |
-| 审稿+判卷 agent | 敌意审稿+同一杆秤（Phase 2） | 看到原始 SKILL.md+diff+目标问题+考题。**看不到编辑者的推理。** 同一上下文判基线版和优化版。 |
-
----
-
-## 6. 数据文件
-
-### results.tsv
-
-位置：`.claude/skills/skill-optimizer/results.tsv`
-
-```tsv
-timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode	pass_rate
-2026-05-09T10:00	baseline	meeting-notes	-	62.5	baseline	-	Initial	dry_run	0.625
-2026-05-09T10:15	a1b2c3d	meeting-notes	62.5	78.2	keep	Edge cases	Case #6,#8 FAIL→PASS	dry_run	0.875
-```
-
-`eval_mode`: `full_test`（子 agent 实测）或 `dry_run`（模拟）。
-
-### test-prompts.json
-
-位置：`{skill-dir}/test-prompts.json`。每个 skill 的考题集，含维度定义和全部测试用例。
-
----
-
-## 7. 异常处理
-
-| 场景 | 处理 |
-|------|------|
-| 不在 git 仓库 | 建议 `git init`；拒绝则文件备份代替 git revert |
-| results.tsv 缺失 | 自动创建并写表头 |
-| 分支冲突 | 名称加 `-2`/`-3`，3 次失败后询问 |
-| git revert 失败 | `git stash` 后重试；仍失败则从旧 commit 提取文件手动恢复 |
-| 3 轮仍有短板 | 询问：加一轮 / 探索重写 / 收工 |
-| 文件 > 150% 原大小 | 拒绝提交，精简 |
-| 无子 agent 可用 | 退化为 dry-run，主 agent 直接对照标准判定 |
-
----
-
-## 8. 反模式
-
-- 改变 skill 的核心功能——只优化"怎么写"，不改"做什么"
-- 引入新依赖——不添加 skill 原本没有的脚本或引用
-- 一轮改多个不相关维度——一次一个，确保改进可归因
-- 文件膨胀超 150%
-- 用 `git reset --hard` 回滚——必须用 `git revert`
-- 同一 agent 上下文改完自己评——审稿 agent 必须独立且看不到编辑者推理
-- 考题只有 happy path——必须覆盖边界和失败模式
-
----
-
-## 9. 与 darwin-skill 对比
-
-| 维度 | Darwin-Skill | Skill-Optimizer |
-|------|-------------|-----------------|
-| **效果评估** | 主观 1-10 分 | 二进制 PASS/FAIL × 通过率 |
-| **可复现性** | 低 | 高（机械化标准） |
-| **可归因性** | "大概 6/10 分" | "第 3、5、7 题挂了，根因是 null 处理" |
-| **测试设计** | 临时想 prompt | Dimension × Tuple 系统覆盖 |
-| **审稿机制** | 无 | 对抗性审稿（独立上下文+敌意 prompt） |
-| **前后对比** | 不同 judge 可能不同标准 | **同一杆秤**量前后，Delta 可信 |
-| **Judge 可靠性** | 信任 | Phase 0.6 校准**标准**（不是人） |
-| **棘轮机制** | git revert | git revert（相同） |
-| **人在回路** | 每个 skill 后确认 | 仅在 Phase 0.5/0.6 参与，Phase 1-3 自主 |
-
----
-
-## 10. 实验验证
-
-| 实验 | 对象 | 基线 | Darwin | Opt-Old | Opt-New | 子 agent |
-|------|------|------|--------|---------|---------|----------|
-| 1 | json-and-csv（代码型） | 53% | 80% | 100% | — | 0 (dry) |
-| 2 | meeting-notes（模板型） | 63% | 88% | 100% | — | 0 (dry) |
-| 3 | write-judge-prompt（流程型） | 88% | 100% | 100% | 100% | 0 (dry) |
-| 4 | error-analysis（流程型） | 75% | 100% | 88% | 100% | **7** (真实) |
-
-**实验 4 关键发现：**
-- Phase 0.6 第一轮 TNR=0%（标准模糊）→ 收紧标准后 TNR=100%
-- 审稿 agent：v1 5/10（门禁位置错误）→ v2 8/10
-- 方案 B：消除了 case 2/4 的假退步——之前不同判卷 agent 给出矛盾结果
-- Darwin: 28 行（3 段，有重复） / Opt-Old: 6 行（门禁在末尾） / Opt-New: 13 行（门禁在开头，无重复）
-
----
-
-## 核心哲学
-
-> 像训练模型一样优化 Agent Skills。
-> 每次只改一个 SKILL.md。
-> 结构性标准 + 实测效果双重评估。
-> 独立审稿 + 同一杆秤 → Delta 可信。
-> 只保留可测量的改进，其余回滚。
-> 分数只升不降——一个只能向前转的棘轮。
-> 定义目标后自主运行——人在开头确认方向，后面交给 agent。
+MIT
