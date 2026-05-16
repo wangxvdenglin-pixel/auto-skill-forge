@@ -1,0 +1,14 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config (contains user-specific paths)
+.claude/settings.local.json
+
+# Experiment output artifacts
+experiment*/test-data/output/
