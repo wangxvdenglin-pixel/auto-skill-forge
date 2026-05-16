@@ -1,5 +1,0 @@
-timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode	pass_rate
-2026-05-09T19:10	baseline	json-and-csv-data-transformation	-	58.7	baseline	-	darwin-skill baseline	dry_run	0.60
-2026-05-09T19:10	baseline	json-and-csv-data-transformation	-	57.0	baseline	-	skill-optimizer baseline	dry_run	0.533
-2026-05-09T19:30	1447932	json-and-csv-data-transformation	0.533	0.800	keep	-	darwin: structural improvements	dry_run	0.800
-2026-05-09T19:30	2be674c	json-and-csv-data-transformation	0.533	1.000	keep	-	optimizer: code-level fixes	dry_run	1.000
