@@ -13,7 +13,7 @@ Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 ## Quick Start
 
 ```bash
-npx skills add wangxvdenglin-pixel/auto-skill-forge
+npx skills add denglinnnnn/auto-skill-forge
 ```
 
 Then just tell Claude Code what you want.

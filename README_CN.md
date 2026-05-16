@@ -13,7 +13,7 @@
 ## 快速开始
 
 ```bash
-npx skills add wangxvdenglin-pixel/auto-skill-forge
+npx skills add denglinnnnn/auto-skill-forge
 ```
 
 然后直接告诉 Claude Code 你想要什么。
